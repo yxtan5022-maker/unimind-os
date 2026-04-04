@@ -31,7 +31,7 @@ Dynamic Bit-Weighting (动态位权): * [EN] Implements "logic collapse" where b
 
 Virtual Expansion (逻辑扩容): * [EN] Simulates 64GB logical throughput on 32GB RAM via mathematical mapping.
 
-[CN] 通过数学映射，在 32GB RAM 上模拟出 64GB 的逻辑吞吐量。
+[CN] 通过数学映射，在 32GB RAM 上模拟出 40GB 的逻辑吞吐量。
 
 /kernel/topo-mapper —— Topology Engine / 拓扑映射器
 Hardware Transparency (硬件透明化): * [EN] Converts AI computation graphs into abstract topological manifolds.
