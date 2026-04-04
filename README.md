@@ -42,14 +42,6 @@ Real-time Scaling (实时适配): * [EN] Automatically identifies CPU/GPU/NPU an
 
 [CN] 自动识别 CPU/GPU/NPU，实时压缩或拉伸二进制流以适应物理结构。
 
-📂 Structure / 目录结构
-/core: Rust implementation of the UniBit engine. (Rust 实现的位权引擎)
-
-/kernel: C++ hardware transparency layer. (C++ 硬件透明层)
-
-/bridge: AIOS natural language interpretation layer. (AIOS 自然语言解释层)
-
-/examples: Demos for logic collapse and void-computing. (虚空算力演示 Demo)
 ## 🤝 Contributing
 We are looking for architects, dreamers, and hackers who believe that the "Wall" must come down. 
 
