@@ -42,6 +42,38 @@ Real-time Scaling (实时适配): * [EN] Automatically identifies CPU/GPU/NPU an
 
 [CN] 自动识别 CPU/GPU/NPU，实时压缩或拉伸二进制流以适应物理结构。
 
+## 🧪 Demo / 可运行演示
+
+### Python (可直接跑)
+
+```bash
+python -m umos_py.demo
+python emample/proof_of_concept.py
+python bridge/umos_link.py
+```
+
+### Rust core (可选：给 Python 提供加速/ABI)
+
+```bash
+cd core
+cargo build --release
+```
+
+构建成功后，Python 会自动尝试加载：
+
+- Windows: `core/target/release/umos_core.dll`
+- Linux: `core/target/release/libumos_core.so`
+- macOS: `core/target/release/libumos_core.dylib`
+
+### C++ kernel (Topology Mapper)
+
+```bash
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+然后可运行 `build/kernel/umos_topo_mapper`（Windows 下为 `.exe`）。
+
 ## 🤝 Contributing
 We are looking for architects, dreamers, and hackers who believe that the "Wall" must come down. 
 

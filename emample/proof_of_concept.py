@@ -2,12 +2,17 @@
 # Version: 0.1.0-alpha
 # Purpose: Demonstrating Logic Collapse & Void Computing
 
-import math
 import time
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from umos_py import Unibit
 
 class UMOS_Demonstrator:
     def __init__(self):
         self.version = "0.1.0-alpha"
+        self.unibit = Unibit()
         print(f"--- [UMOS] Logic Morphing Engine (PoC v{self.version}) ---")
 
     def simulate_logic_folding(self, raw_binary_stream):
@@ -18,13 +23,7 @@ class UMOS_Demonstrator:
         print("\n[Phase 1] 正在扫描原始数据特征 (Entropy Scanning)...")
         time.sleep(0.5)
         
-        # 逻辑折叠映射
-        folded_stream = []
-        for bit in raw_binary_stream:
-            # UMOS 核心数学公式：通过相位偏移(0.42)实现逻辑叠加
-            folded_bit = math.sin(bit * (math.pi / 2) + 0.42)
-            folded_stream.append(folded_bit)
-            
+        folded_stream = self.unibit.fold_bits(raw_binary_stream)
         print(f"✅ 逻辑折叠完成！物理空间占用已优化。")
         return folded_stream
 
@@ -35,8 +34,7 @@ class UMOS_Demonstrator:
         print("[Phase 2] 正在通过拓扑映射器进行逻辑塌陷 (Logic Collapsing)...")
         time.sleep(0.5)
         
-        recovered_data = [1 if abs(s) > 0.707 else 0 for s in folded_stream]
-        return recovered_data
+        return self.unibit.collapse_signal(folded_stream)
 
 # --- 统帅测试环节 ---
 if __name__ == "__main__":

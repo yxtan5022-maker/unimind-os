@@ -4,6 +4,10 @@
 
 import sys
 import os
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from umos_py import Unibit
 
 class UMOSLink:
     """
@@ -13,6 +17,7 @@ class UMOSLink:
     def __init__(self, agent_name="AstrBot"):
         self.agent = agent_name
         self.status = "RESONANCE_ACTIVE" # 逻辑共振激活
+        self.unibit = Unibit()
         print(f"🔗 [UMOS-Link] AI Agent '{self.agent}' 已接入逻辑流层。")
 
     def bypass_kernel_wall(self, task_description):
@@ -41,7 +46,13 @@ class UMOSLink:
         深度定制化：为一个硬件设备填写全新的代码，调用‘虚空算力’。
         """
         print(f"🔋 [UMOS] 正在为当前硬件重写驱动以支持 {required_gb}GB 逻辑需求...")
-        # 调用 core/lib-unibit 的逻辑
+        base = 32
+        factor = max(1, int(round(float(required_gb) / float(base))))
+        demo_bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
+        folded = self.unibit.fold_bits(demo_bits)
+        expanded = self.unibit.virtual_expand_signal(folded, factor)
+        collapsed = self.unibit.collapse_signal(folded)
+        print(f"🧠 [UMOS] 虚空映射：base={base}GB target={required_gb}GB factor={factor}x expanded_len={len(expanded)} roundtrip={collapsed == demo_bits}")
         print(f"✅ [UMOS] 物理内存已折叠。AI 实时驱动已注入硬件。")
 
 # --- 统帅指令测试 ---
