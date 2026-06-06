@@ -1,6 +1,6 @@
 # unimind-os
 
-English | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh-CN.md) | [Русский](README.ru.md)
 
 The World's First AI Native Operating System. Breaking the wall between hardware and consciousness.
 
