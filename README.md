@@ -82,6 +82,8 @@ python bridge/agent_resonance.py
 
 ### Rust core (optional, for Python acceleration / ABI)
 
+**Prerequisites:** Install Rust via [rustup.rs](https://rustup.rs).
+
 ```bash
 cd core
 cargo build --release
@@ -95,11 +97,20 @@ After a successful build, Python will auto-try loading:
 
 ### C++ kernel (Topology Mapper)
 
+**Prerequisites:** CMake 3.16+ and a C++17 compiler (GCC, Clang, or MSVC).
+
 ```bash
+# Linux / macOS
 cmake -S . -B build
 cmake --build build --config Release
 
-./build/kernel/umos_topo_mapper   # or .exe on Windows
+./build/kernel/umos_topo_mapper
+
+# Windows (MinGW)
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="C:\msys64\mingw64\bin\mingw32-make.exe"
+cmake --build build --config Release
+
+./build/kernel/umos_topo_mapper.exe
 ```
 
 ## 🤝 Contributing
