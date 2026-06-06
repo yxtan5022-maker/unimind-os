@@ -40,14 +40,44 @@ AI flows across devices, performing deep customization by writing new low-level 
 - Roadmap: [ROADMAP.md](ROADMAP.md)
 - Whitepaper: [docs/WHITE_PAPER.md](docs/WHITE_PAPER.md)
 
+## 🚀 Quick Start
+
+```bash
+# Clone and run the demo immediately
+git clone https://github.com/yxtan5022-maker/unimind-os.git
+cd unimind-os
+
+# Option A — run directly
+python run.py
+python emample/proof_of_concept.py
+python bridge/umos_link.py
+python bridge/cross_arch_vm.py
+python bridge/agent_resonance.py
+
+# Option B — install as a package
+pip install -e .
+umos-demo
+```
+
 ## 🧪 Demo
 
 ### Python
 
 ```bash
+# Core logic folding + collapse demo
 python -m umos_py.demo
+
+# Proof-of-concept: 32GB → 64GB logical expansion
 python emample/proof_of_concept.py
+
+# AI Agent resonance bridge
 python bridge/umos_link.py
+
+# Cross-architecture virtual machine
+python bridge/cross_arch_vm.py
+
+# Hardware resonance driver
+python bridge/agent_resonance.py
 ```
 
 ### Rust core (optional, for Python acceleration / ABI)
@@ -68,9 +98,9 @@ After a successful build, Python will auto-try loading:
 ```bash
 cmake -S . -B build
 cmake --build build --config Release
-```
 
-Then run `build/kernel/umos_topo_mapper` (or `.exe` on Windows).
+./build/kernel/umos_topo_mapper   # or .exe on Windows
+```
 
 ## 🤝 Contributing
 We are looking for architects, dreamers, and hackers who believe that the "Wall" must come down. 
