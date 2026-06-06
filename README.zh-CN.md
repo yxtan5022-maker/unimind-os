@@ -46,7 +46,7 @@ AI 模型像液体一样在设备间流动，为特定硬件实时编写全新�
 
 ```bash
 python -m umos_py.demo
-python emample/proof_of_concept.py
+python example/proof_of_concept.py
 python bridge/umos_link.py
 ```
 

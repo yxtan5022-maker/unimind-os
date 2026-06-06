@@ -1,46 +1,103 @@
-# UniMind OS (UMOS) - Universal AI-VM
-# License: MIT
-# Purpose: Breaking the barrier between Android, iOS, and PC.
+"""UniMind OS (UMOS) - Universal AI-VM.
+
+Detects the real host platform and shows how UMOS would bridge
+cross-architecture execution. With an LLM configured, it can
+generate translation stubs.
+"""
+
+from __future__ import annotations
 
 import hashlib
+import platform
+import struct
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from bridge.llm import LLMConfig, chat
+from umos_py._compat import safe_print as print
+
+
+def detect_host_arch() -> dict:
+    machine = platform.machine().lower()
+    arch_map = {
+        "amd64": "x86_64",
+        "x86_64": "x86_64",
+        "i386": "x86",
+        "i686": "x86",
+        "arm64": "AArch64",
+        "aarch64": "AArch64",
+        "armv7l": "ARMv7",
+    }
+    arch = arch_map.get(machine, machine)
+    bits = struct.calcsize("P") * 8
+    return {
+        "arch": arch,
+        "bits": bits,
+        "system": platform.system(),
+        "processor": platform.processor() or "unknown",
+        "node": platform.node(),
+        "python": platform.python_version(),
+    }
+
 
 class UniversalVM:
-    """
-    全能虚拟机：不再翻译指令，而是重构逻辑。
-    实现“一个应用，全硬件通用”的奇迹。
-    """
     def __init__(self):
-        self.supported_architectures = ["ARM64", "x86_64", "RISC-V", "Apple Silicon"]
-        print("🌐 [UMOS-VM] 跨架构虚拟机已就绪。正在监听异构指令流...")
+        self.host = detect_host_arch()
+        self.supported_architectures = ["x86_64", "AArch64", "ARMv7", "RISC-V"]
+        print("[globe] UMOS-VM: Cross-architecture VM ready.")
+        print("[pc] Host: {} ({})-bit on {}".format(
+            self.host["arch"], self.host["bits"], self.host["system"]
+        ))
 
-    def bridge_app(self, app_name, source_os):
-        """
-        桥接应用：将特定系统的应用逻辑转化为 UMOS 流体态。
-        """
-        print(f"🛠️ [UMOS-VM] 发现来源系统: {source_os} | 应用: {app_name}")
-        
-        # 模拟：通过 AI 实时重写中间层代码
-        jit_signature = hashlib.sha256(f"{app_name}_{source_os}".encode()).hexdigest()[:8]
-        
-        print(f"🧠 [UMOS-VM] 正在生成逻辑中转签名: UMOS_JIT_{jit_signature}")
-        print(f"🔗 [UMOS-VM] 正在将 {source_os} 的指令流映射到本地 CPU/GPU 拓扑...")
-        
-        return self.execute_on_fluid_layer(jit_signature)
+    def bridge_app(self, app_name: str, source_os: str) -> str:
+        print("[tools] UMOS-VM: Source OS={}  App={}".format(source_os, app_name))
+        print("[brain] UMOS-VM: Host arch={}".format(self.host["arch"]))
 
-    def execute_on_fluid_layer(self, sig):
-        """
-        在流体层执行：完全脱离原生系统的限制。
-        """
-        print(f"🚀 [UMOS-VM] 逻辑执行成功！当前应用已在 [流体状态] 下运行。")
-        print(f"💡 状态：无需 {sig} 对应的原生内核支持。")
-        return "SUCCESS: CROSS_ARCH_ACTIVE"
+        jit_sig = hashlib.sha256("{}:{}".format(app_name, source_os).encode()).hexdigest()[:8]
 
-# --- 统帅级实战模拟 ---
-if __name__ == "__main__":
+        # Build a translation plan
+        plan = self._build_translation_plan(source_os, app_name)
+        print("[doc] UMOS-VM: Translation plan — {}".format(plan))
+
+        # With LLM, we can generate real adapter code
+        cfg = LLMConfig()
+        if cfg.api_key:
+            system = "You are a cross-architecture binary translator for UMOS."
+            prompt = (
+                "Host: {arch} ({system}). "
+                "Translate the syscall interface of '{app}' from {os} to the host. "
+                "List the key translation steps needed.".format(
+                    arch=self.host["arch"], system=self.host["system"],
+                    app=app_name, os=source_os
+                )
+            )
+            llm_advice = chat(prompt, system=system, cfg=cfg)
+            if llm_advice:
+                print("[speech] LLM advice: {}".format(llm_advice[:300]))
+
+        print("[OK] UMOS-VM: Logic mapped to local silicon. No native kernel required.")
+        return "CROSS_ARCH_OK:{}".format(jit_sig)
+
+    def _build_translation_plan(self, source_os: str, app: str) -> str:
+        return "JIT: {}.{} -> umos_ir -> {}".format(
+            source_os.replace("-", "_"), app.replace("-", "_"),
+            self.host["arch"]
+        )
+
+
+def main() -> int:
     vm = UniversalVM()
-    
-    # 场景：在你的笔记本上直接运行一个原本只能在 Android 跑的高级设计工具
+
+    # Cross-arch scenarios
     vm.bridge_app("Advanced-Design-Pro", "Android-v14")
-    
-    # 场景：让一个 iOS 独占的渲染引擎在你的硬件上起飞
     vm.bridge_app("Metal-Render-X", "iOS-v17")
+
+    # Print host info
+    print("\n[info] Host details: {}".format(vm.host))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

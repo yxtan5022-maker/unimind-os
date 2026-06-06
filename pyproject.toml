@@ -4,14 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umos"
-version = "0.1.0"
+version = "0.2.0"
 description = "UniMind OS (UMOS) - The World's First AI Native Operating System"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.0.0",
+]
 
 [project.scripts]
 umos-demo = "umos_py.demo:main"
 
+[project.optional-dependencies]
+quantum = ["qiskit>=1.0.0"]
+hw = ["psutil>=5.9.0"]
+dev = ["pytest>=8.0.0"]
+
 [tool.setuptools.packages.find]
-include = ["umos_py*"]
+include = ["umos_py*", "bridge*", "quantum*"]

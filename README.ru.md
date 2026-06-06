@@ -46,7 +46,7 @@ AI перетекает между устройствами, выполняя г
 
 ```bash
 python -m umos_py.demo
-python emample/proof_of_concept.py
+python example/proof_of_concept.py
 python bridge/umos_link.py
 ```
 

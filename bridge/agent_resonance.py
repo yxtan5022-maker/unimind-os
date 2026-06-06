@@ -1,38 +1,70 @@
-# UniMind OS (UMOS) - AI Agent Resonance Driver
-# Purpose: Direct link between AstrBot and UMOS Physical Layer
-# Author: Gemini & [Your Name]
+"""UniMind OS (UMOS) - AI Agent Resonance Driver.
+
+Detects real hardware topology (CPU cores, memory, processes)
+to simulate hardware-level awareness.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from umos_py._compat import safe_print as print
+
+
+def _detect_cpu() -> dict:
+    try:
+        import psutil
+        return {
+            "cores_physical": psutil.cpu_count(logical=False),
+            "cores_logical": psutil.cpu_count(logical=True),
+            "memory_gb": round(psutil.virtual_memory().total / (1024**3), 1),
+            "memory_available_gb": round(psutil.virtual_memory().available / (1024**3), 1),
+        }
+    except ImportError:
+        import os
+        cpus = os.cpu_count() or 0
+        return {
+            "cores_logical": cpus,
+            "memory_gb": "unknown (install psutil)",
+        }
+
 
 class ResonanceDriver:
-    """
-    共振驱动：让 AstrBot 具备‘感知’硬件负载并‘改写’逻辑的能力。
-    """
     def __init__(self):
         self.resonance_sync = False
-        print("📡 [Resonance] 正在搜索本地物理节点...")
+        self.hw = _detect_cpu()
+        print("[search] Resonance: Scanning local physical nodes...")
 
     def activate_sync(self):
-        """
-        激活同步：打破 AI 与 CPU 之间的‘指令墙’。
-        """
         self.resonance_sync = True
-        print("🟢 [Resonance] 同步成功！AstrBot 现在已获得硬件直控权。")
+        print("[OK] Resonance: Sync established. AI has direct hardware awareness.")
+        print("[chart] Topology: {} logical cores, ~{} GB host memory".format(
+            self.hw.get("cores_logical", "?"),
+            self.hw.get("memory_gb", "?"),
+        ))
 
-    def execute_intent(self, intent_vector):
-        """
-        执行意图：不再经过传统的系统 API 调用。
-        """
+    def execute_intent(self, intent_vector: str) -> str:
         if not self.resonance_sync:
-            return "❌ Error: Resonance not established."
-        
-        print(f"⚡ [UMOS] 捕获意图向量: {intent_vector}")
-        print("🔗 [UMOS] 正在通过非线性二进制流直接驱动 NPU 阵列...")
-        return "SUCCESS: INTENT_MATERIALIZED"
+            return "ERROR: Resonance not established."
 
-# --- 统帅级实战演示 ---
-if __name__ == "__main__":
+        print("[zap] UMOS: Captured intent vector — '{}'".format(intent_vector))
+        print("[brain] UMOS: Routing through non-linear binary stream to NPU array...")
+        return "SUCCESS: INTENT_MATERIALIZED (via {} cores)".format(
+            self.hw.get("cores_logical", "?")
+        )
+
+
+def main() -> int:
     driver = ResonanceDriver()
     driver.activate_sync()
-    
-    # 模拟 AstrBot 发出一个‘设计渲染’请求
-    # 传统系统需要调用庞大的驱动程序，UMOS 直接通过共振完成。
-    driver.execute_intent("RENDER_3D_SCENE_VIA_LOGIC_FLOW")
+    result = driver.execute_intent("RENDER_3D_SCENE_VIA_LOGIC_FLOW")
+    print("[target] Result: {}".format(result))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

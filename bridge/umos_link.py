@@ -1,66 +1,88 @@
-# UniMind OS (UMOS) - AI-to-Hardware Resonance Bridge
-# License: MIT
-# Purpose: Allowing AI Agents (like AstrBot) to bypass traditional Kernel walls.
+"""UniMind OS (UMOS) - AI-to-Hardware Resonance Bridge.
+
+When an LLM API key is configured (via UMOS_LLM_API_KEY), the bridge
+uses a real LLM to translate natural-language intent into runnable Python code.
+Without a key, it falls back to a simulated response.
+"""
+
+from __future__ import annotations
 
 import sys
-import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from umos_py import Unibit
+
+from bridge.llm import LLMConfig, chat
+from umos_py._compat import safe_print as print
+from umos_py.unibit import Unibit
+
 
 class UMOSLink:
-    """
-    UMOS 连接桥：实现‘拥抱模型，舍弃内核’的核心协议。
-    它让 AI 不再是应用的调用者，而是硬件的统帅。
-    """
-    def __init__(self, agent_name="AstrBot"):
+    def __init__(self, agent_name: str = "UMOS-Agent"):
         self.agent = agent_name
-        self.status = "RESONANCE_ACTIVE" # 逻辑共振激活
+        self.status = "RESONANCE_ACTIVE"
         self.unibit = Unibit()
-        print(f"🔗 [UMOS-Link] AI Agent '{self.agent}' 已接入逻辑流层。")
+        print("[link] UMOS-Link: AI Agent '{}' connected to logic flow layer.".format(agent_name))
 
-    def bypass_kernel_wall(self, task_description):
-        """
-        核心功能：即时编写中转代码，直接运行应用。
-        不需要 Android/iOS 内核，AI 实时生成执行路径。
-        """
-        print(f"🚀 [UMOS] 正在拦截任务: '{task_description}'")
-        print(f"🧠 [UMOS] 正在舍弃图标与菜单，直接从自然语言涌现执行流...")
-        
-        # 模拟跨架构虚拟机 (Universal AI-VM) 的逻辑
-        target_code = self.generate_instant_bytecode(task_description)
-        
-        print(f"✨ [UMOS] 跨架构代码已生成。无需原生操作系统环境，直接运行中。")
-        return f"EXECUTED_VIA_UMOS_VM: {target_code[:20]}..."
+    def generate_code(self, task_description: str) -> str | None:
+        system = (
+            "You are the UMOS kernel. The user describes a task in natural language. "
+            "Generate *only* valid Python code that accomplishes the task. "
+            "No explanations, no markdown, no imports unless needed. "
+            "The code will be executed by exec(). Be safe and self-contained."
+        )
+        return chat(task_description, system=system)
 
-    def generate_instant_bytecode(self, intent):
-        """
-        AI 瞬时写出一段中转代码 (Just-In-Time Logic Generation)
-        """
-        # 这里模拟 AI 将意图直接翻译成机器能懂的拓扑信号
-        return f"0xEF_TOPOLOGY_FLOW_{hash(intent)}"
+    def bypass_kernel_wall(self, task_description: str) -> str:
+        print("[rocket] UMOS: Intercepting task — '{}'".format(task_description))
+        print("[brain] UMOS: Generating code from intent (no icons, no kernel)...")
 
-    def allocate_void_ram(self, required_gb):
-        """
-        深度定制化：为一个硬件设备填写全新的代码，调用‘虚空算力’。
-        """
-        print(f"🔋 [UMOS] 正在为当前硬件重写驱动以支持 {required_gb}GB 逻辑需求...")
+        code = self.generate_code(task_description)
+        if code is None:
+            print("[info] UMOS: No LLM configured — using simulated execution.")
+            return "SIMULATED_EXECUTION: {}".format(task_description)
+
+        print("[pc] UMOS: Generated code ({} chars). Executing...".format(len(code)))
+        try:
+            local_ns: dict = {}
+            exec(code, {"__builtins__": __builtins__}, local_ns)
+            result = local_ns.get("result", local_ns.get("output", "EXECUTED_OK"))
+            return "LLM_EXECUTED: {}".format(str(result)[:200])
+        except Exception as e:
+            return "LLM_EXECUTION_FAILED: {}".format(e)
+
+    def allocate_void_ram(self, required_gb: int) -> None:
+        print("[battery] UMOS: Remapping hardware for {} GB logical demand...".format(required_gb))
         base = 32
-        factor = max(1, int(round(float(required_gb) / float(base))))
-        demo_bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
-        folded = self.unibit.fold_bits(demo_bits)
+        factor = max(1, round(required_gb / base))
+        bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
+        folded = self.unibit.fold_bits(bits)
         expanded = self.unibit.virtual_expand_signal(folded, factor)
         collapsed = self.unibit.collapse_signal(folded)
-        print(f"🧠 [UMOS] 虚空映射：base={base}GB target={required_gb}GB factor={factor}x expanded_len={len(expanded)} roundtrip={collapsed == demo_bits}")
-        print(f"✅ [UMOS] 物理内存已折叠。AI 实时驱动已注入硬件。")
+        print("[chart] UMOS: void-map base={} target={} factor={}x expanded_len={} roundtrip={}".format(
+            base, required_gb, factor, len(expanded), collapsed == bits
+        ))
+        print("[OK] UMOS: Physical memory folded. AI driver injected into hardware.")
 
-# --- 统帅指令测试 ---
-if __name__ == "__main__":
-    link = UMOSLink("AstrBot-Commander")
-    
-    # 模拟：让一个只支持 Android 的应用在 UMOS 上跑起来
-    link.bypass_kernel_wall("运行 Android 高级设计软件 (跨架构运行模式)")
-    
-    # 模拟：突破物理内存瓶颈
+
+def main() -> int:
+    link = UMOSLink("UMOS-Commander")
+
+    # Real test: ask LLM to generate code
+    result = link.bypass_kernel_wall("Print the first 10 prime numbers")
+    print("[target] Result: {}".format(result))
+
+    # Memory expansion demo
     link.allocate_void_ram(64)
+
+    return 0
+
+
+if __name__ == "__main__":
+    cfg = LLMConfig()
+    if cfg.api_key:
+        print("[info] LLM configured: model={} base_url={}".format(cfg.model, cfg.base_url))
+    else:
+        print("[info] No UMOS_LLM_API_KEY set — running in simulation mode.")
+        print("[info] Set UMOS_LLM_API_KEY and UMOS_LLM_MODEL (optional) for real AI kernel.")
+    raise SystemExit(main())

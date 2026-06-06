@@ -35,11 +35,28 @@ class Unibit:
 
     def virtual_expand_signal(self, folded: Sequence[float], factor: int) -> List[float]:
         factor = max(1, int(factor))
-        out: List[float] = []
-        for i, v in enumerate(folded):
-            for j in range(factor):
-                phase = j * 0.03
-                out.append(float(v) * math.cos(phase) + math.sin(i * 0.0001) * 0.0005)
+        n = len(folded)
+        if n < 2:
+            return [float(v) for v in folded]
+
+        out_len = n * factor
+        out: List[float] = [0.0] * out_len
+        for k in range(out_len):
+            t = k / factor
+            s = 0.0
+            wsum = 0.0
+            for i in range(n):
+                x = t - i
+                if abs(x) < 1e-12:
+                    s += folded[i]
+                    wsum += 1.0
+                elif abs(x) < 6.0:
+                    sinc = math.sin(math.pi * x) / (math.pi * x)
+                    window = 0.5 * (1.0 + math.cos(math.pi * x / 6.0))
+                    weight = sinc * window
+                    s += folded[i] * weight
+                    wsum += weight
+            out[k] = s / wsum if wsum > 0 else 0.0
         return out
 
     def _py_fold_bits(self, bits: Sequence[int]) -> List[float]:

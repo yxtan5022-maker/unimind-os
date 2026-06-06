@@ -49,7 +49,7 @@ cd unimind-os
 
 # Option A — run directly
 python run.py
-python emample/proof_of_concept.py
+python example/proof_of_concept.py
 python bridge/umos_link.py
 python bridge/cross_arch_vm.py
 python bridge/agent_resonance.py
@@ -68,7 +68,7 @@ umos-demo
 python -m umos_py.demo
 
 # Proof-of-concept: 32GB → 64GB logical expansion
-python emample/proof_of_concept.py
+python example/proof_of_concept.py
 
 # AI Agent resonance bridge
 python bridge/umos_link.py
