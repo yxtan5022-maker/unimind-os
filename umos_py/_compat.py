@@ -60,6 +60,7 @@ _EMOJI_MAP = {
     "\U0001f3c6": "[trophy]",
     "\U0001f44b": "[wave]",
     "\U0001f91d": "[handshake]",
+    "\u2192": "->",
 }
 
 

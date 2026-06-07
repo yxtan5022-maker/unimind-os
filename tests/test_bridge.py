@@ -93,3 +93,92 @@ def test_resonance_driver_fluid_precision():
     r = d.execute_intent("TEST_VECTOR")
     assert "SUCCESS" in r
     assert "precision" in r
+
+
+def test_peer_info_roundtrip():
+    from bridge.distributed.protocol import PeerInfo
+    p = PeerInfo(node_id="n1", host="127.0.0.1", port=7777)
+    d = p.to_dict()
+    p2 = PeerInfo.from_dict(d)
+    assert p2.node_id == "n1"
+    assert p2.host == "127.0.0.1"
+
+
+def test_service_announcement_roundtrip():
+    from bridge.distributed.protocol import PeerInfo, ServiceAnnouncement
+    p = PeerInfo(node_id="n1", host="127.0.0.1", port=7777)
+    a = ServiceAnnouncement(sender=p)
+    d = a.to_dict()
+    a2 = ServiceAnnouncement.from_dict(d)
+    assert a2.msg_type == a.msg_type
+
+
+def test_intent_message_roundtrip():
+    from bridge.iep.schema import IntentMessage, IntentAction
+    m = IntentMessage(action=IntentAction.COMPUTE, payload={"task": "test"})
+    d = m.to_dict()
+    m2 = IntentMessage.from_dict(d)
+    assert m2.action == IntentAction.COMPUTE
+    assert m2.payload["task"] == "test"
+
+
+def test_cluster_state_upsert():
+    from bridge.distributed.state import ClusterState
+    from bridge.distributed.protocol import PeerInfo
+    cs = ClusterState()
+    p = PeerInfo(node_id="n1", host="127.0.0.1", port=7777)
+    cs.upsert(p)
+    assert cs.get("n1") is not None
+    assert cs.get("n1").info.node_id == "n1"
+
+
+def test_cluster_state_best_target():
+    from bridge.distributed.state import ClusterState
+    from bridge.distributed.protocol import PeerInfo
+    cs = ClusterState()
+    p1 = PeerInfo(node_id="n1", host="127.0.0.1", port=7777, cpu_load=10, memory_percent=20)
+    cs.upsert(p1)
+    best = cs.best_target(exclude={"nonexistent"})
+    assert best is not None
+    assert best.info.node_id == "n1"
+
+
+def test_intent_dispatcher_fold():
+    from bridge.iep.schema import IntentMessage, IntentAction
+    from bridge.iep.dispatcher import IntentDispatcher
+    disp = IntentDispatcher()
+    intent = IntentMessage(action=IntentAction.FOLD, payload={"bits": [1, 0, 1]})
+    resp = disp.dispatch(intent)
+    assert resp.success
+    assert len(resp.result) == 3
+
+
+def test_intent_dispatcher_compute():
+    from bridge.iep.schema import IntentMessage, IntentAction
+    from bridge.iep.dispatcher import IntentDispatcher
+    disp = IntentDispatcher()
+    intent = IntentMessage(action=IntentAction.COMPUTE, payload={"task": "result = 2 + 2"})
+    resp = disp.dispatch(intent)
+    assert resp.success
+    assert "4" in str(resp.result)
+
+
+def test_logic_scheduler_local():
+    from bridge.scheduler import LogicScheduler
+    from bridge.iep.schema import IntentMessage, IntentAction
+    sched = LogicScheduler()
+    intent = IntentMessage(action=IntentAction.QUERY_STATUS)
+    tid = sched.schedule(intent)
+    assert tid is not None
+
+
+def test_distributed_node_clean_start_stop():
+    from bridge.distributed.node import DistributedNode
+    node = DistributedNode()
+    node.start()
+    import time
+    time.sleep(0.5)
+    status = node.get_status()
+    assert "node_id" in status
+    assert "cpu_load" in status
+    node.stop()
