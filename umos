@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# UMOS launcher for macOS and Linux.
+# Usage: ./umos [--desktop|--demo|--mcp|--healer|--cluster|subcommand...]
+set -euo pipefail
+
+UMOS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+run_desktop()   { exec python3 "$UMOS_ROOT/gui/app.py" "$@"; }
+run_demo()      { exec python3 -m umos_py.demo "$@"; }
+run_mcp()       { exec python3 -m bridge.hermes.mcp_server "$@"; }
+run_healer()    { exec python3 -m bridge.healer "$@"; }
+run_cluster()   { exec python3 -m bridge.distributed.node "$@"; }
+run_iep()       { exec python3 -m bridge.iep.dispatcher "$@"; }
+run_build()     { exec python3 "$UMOS_ROOT/build_exe.py" "$@"; }
+run_tests()     { exec python3 -m pytest "$UMOS_ROOT/tests/" -v "$@"; }
+
+# If installed via pip, prefer the installed entry points
+if command -v umos-desktop &>/dev/null; then
+    case "${1:-}" in
+        --desktop|desktop|gui|"") exec umos-desktop "${@:2}";;
+        --demo|demo)             exec umos-demo "${@:2}";;
+        --mcp|mcp)               exec python3 -m bridge.hermes.mcp_server "${@:2}";;
+        --healer|heal)           exec python3 -m bridge.healer "${@:2}";;
+        --cluster|cluster)       exec python3 -m bridge.distributed.node "${@:2}";;
+        --iep|iep)               exec python3 -m bridge.iep.dispatcher "${@:2}";;
+        --build|build)           exec python3 "$UMOS_ROOT/build_exe.py" "${@:2}";;
+        --test|test|--tests)     exec python3 -m pytest "$UMOS_ROOT/tests/" -v "${@:2}";;
+        --help|-h)
+            echo "UMOS — Unified Mind Operating System"
+            echo "Usage: $0 [command] [args...]"
+            echo ""
+            echo "Commands:"
+            echo "  (default)      Launch Desktop GUI"
+            echo "  --desktop      Launch Desktop GUI"
+            echo "  --demo         Run CLI demo"
+            echo "  --mcp          Start MCP server (stdio)"
+            echo "  --healer       Start self-healing daemon"
+            echo "  --cluster      Start distributed cluster node"
+            echo "  --iep          Start IEP dispatcher demo"
+            echo "  --build        Build standalone binary"
+            echo "  --test         Run all tests"
+            echo "  --help         Show this message"
+            exit 0;;
+        *) exec umos-desktop "$@";;
+    esac
+fi
+
+# Run from source
+if [ ! -f "$UMOS_ROOT/gui/app.py" ]; then
+    echo "[UMOS] Error: UMOS source not found at $UMOS_ROOT" >&2
+    exit 1
+fi
+
+export PYTHONPATH="$UMOS_ROOT${PYTHONPATH:+:}$PYTHONPATH"
+
+case "${1:-}" in
+    --desktop|desktop|gui|"")  shift 0; run_desktop "$@";;
+    --demo|demo)              shift 1; run_demo "$@";;
+    --mcp|mcp)                shift 1; run_mcp "$@";;
+    --healer|heal)            shift 1; run_healer "$@";;
+    --cluster|cluster)        shift 1; run_cluster "$@";;
+    --iep|iep)                shift 1; run_iep "$@";;
+    --build|build)            shift 1; run_build "$@";;
+    --test|test|--tests)      shift 1; run_tests "$@";;
+    --help|-h)
+        echo "UMOS — Unified Mind Operating System"
+        echo "Usage: $0 [command] [args...]"
+        echo ""
+        echo "Commands:"
+        echo "  (default)      Launch Desktop GUI"
+        echo "  --desktop      Launch Desktop GUI"
+        echo "  --demo         Run CLI demo"
+        echo "  --mcp          Start MCP server (stdio)"
+        echo "  --healer       Start self-healing daemon"
+        echo "  --cluster      Start distributed cluster node"
+        echo "  --iep          Start IEP dispatcher demo"
+        echo "  --build        Build standalone binary"
+        echo "  --test         Run all tests"
+        echo "  --help         Show this message"
+        exit 0;;
+    *) run_desktop "$@";;
+esac

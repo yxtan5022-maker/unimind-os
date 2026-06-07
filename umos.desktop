@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=UMOS Desktop
+Comment=UniMind OS - AI Native Operating System
+Exec=umos --desktop
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Utility;Science;Development;
+StartupNotify=true

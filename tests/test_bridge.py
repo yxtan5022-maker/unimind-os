@@ -182,3 +182,103 @@ def test_distributed_node_clean_start_stop():
     assert "node_id" in status
     assert "cpu_load" in status
     node.stop()
+
+
+# --- Hermes Agent integration ---
+
+def test_acp_adapter_initialize():
+    from bridge.hermes.adapter import HermesACPAdapter
+    import json
+    adapter = HermesACPAdapter()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    resp = adapter.handle_request(req)
+    data = json.loads(resp)
+    assert data["result"]["agent_name"] == "UMOS"
+    assert data["result"]["capabilities"]["fold"]
+
+
+def test_acp_adapter_tools_list():
+    from bridge.hermes.adapter import HermesACPAdapter
+    import json
+    adapter = HermesACPAdapter()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
+    resp = adapter.handle_request(req)
+    data = json.loads(resp)
+    tools = {t["name"]: t for t in data["result"]["tools"]}
+    assert "umos_status" in tools
+    assert "umos_fold" in tools
+    assert "umos_compute" in tools
+
+
+def test_acp_adapter_tool_call_fold():
+    from bridge.hermes.adapter import HermesACPAdapter
+    import json
+    adapter = HermesACPAdapter()
+    req = json.dumps({
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {"name": "umos_fold", "arguments": {"bits": [1, 0, 1]}},
+    })
+    resp = adapter.handle_request(req)
+    data = json.loads(resp)
+    assert data["result"]["success"]
+
+
+def test_mcp_server_initialize():
+    from bridge.hermes.mcp_server import UMOSMCPServer
+    import json
+    server = UMOSMCPServer()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    resp = server.handle_request(req)
+    data = json.loads(resp)
+    assert data["result"]["serverInfo"]["name"] == "umos"
+    assert "tools" in data["result"]["capabilities"]
+
+
+def test_mcp_server_tools_list():
+    from bridge.hermes.mcp_server import UMOSMCPServer
+    import json
+    server = UMOSMCPServer()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}})
+    resp = server.handle_request(req)
+    data = json.loads(resp)
+    tools = {t["name"]: t for t in data["result"]["tools"]}
+    assert "umos_fold" in tools
+    assert "umos_compute" in tools
+    assert "umos_quantum_sample" in tools
+
+
+def test_mcp_server_tool_call_status():
+    from bridge.hermes.mcp_server import UMOSMCPServer
+    import json
+    server = UMOSMCPServer()
+    req = json.dumps({
+        "jsonrpc": "2.0", "id": 1, "method": "tools/call",
+        "params": {"name": "umos_status", "arguments": {}},
+    })
+    resp = server.handle_request(req)
+    data = json.loads(resp)
+    assert "content" in data["result"]
+    assert len(data["result"]["content"]) > 0
+
+
+def test_mcp_server_resources():
+    from bridge.hermes.mcp_server import UMOSMCPServer
+    import json
+    server = UMOSMCPServer()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "resources/list", "params": {}})
+    resp = server.handle_request(req)
+    data = json.loads(resp)
+    uris = [r["uri"] for r in data["result"]["resources"]]
+    assert "umos://status" in uris
+    assert "umos://topology" in uris
+
+
+def test_acp_adapter_unknown_method():
+    from bridge.hermes.adapter import HermesACPAdapter
+    import json
+    adapter = HermesACPAdapter()
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "bogus", "params": {}})
+    resp = adapter.handle_request(req)
+    data = json.loads(resp)
+    assert "error" in data
+    assert data["error"]["code"] == -32601

@@ -36,6 +36,13 @@ MANIFEST
 *.manifest
 *.spec
 
+# Cross-platform build artifacts
+create-dmg.sh
+*.dmg
+*.AppImage
+*.AppDir
+*.app/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

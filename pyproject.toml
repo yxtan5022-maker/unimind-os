@@ -16,6 +16,10 @@ dependencies = [
 [project.scripts]
 umos-demo = "umos_py.demo:main"
 umos-desktop = "gui.app:main"
+umos-mcp = "bridge.hermes.mcp_server:main"
+umos-healer = "bridge.healer:main"
+umos-cluster = "bridge.distributed.node:main"
+umos-iep = "bridge.iep.dispatcher:main"
 
 [project.optional-dependencies]
 quantum = ["qiskit>=1.0.0"]
