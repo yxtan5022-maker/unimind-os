@@ -2,7 +2,7 @@
 [Setup]
 AppName=UniMind OS (UMOS) Desktop
 AppVersion=0.2.0
-DefaultDirName={commonpf}\UMOS-Desktop
+DefaultDirName={pf}\UMOS-Desktop
 DefaultGroupName=UMOS
 UninstallDisplayIcon={app}\UMOS-Desktop.exe
 OutputDir=installer

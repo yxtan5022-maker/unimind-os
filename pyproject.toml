@@ -19,8 +19,10 @@ umos-desktop = "gui.app:main"
 
 [project.optional-dependencies]
 quantum = ["qiskit>=1.0.0"]
+cudaq = ["cudaq"]
 hw = ["psutil>=5.9.0"]
 dev = ["pytest>=8.0.0"]
+all = ["umos[quantum]", "umos[cudaq]", "umos[hw]", "pytest"]
 
 [tool.setuptools.packages.find]
 include = ["umos_py*", "bridge*", "quantum*", "gui*"]
