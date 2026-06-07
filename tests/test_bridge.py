@@ -38,3 +38,58 @@ def test_universal_vm_no_crash():
     vm = UniversalVM()
     r = vm.bridge_app("test-app", "test-os")
     assert "CROSS_ARCH_OK" in r
+
+
+def test_sandbox_executor_success():
+    from bridge.healer import SandboxExecutor
+    exe = SandboxExecutor()
+    r = exe.run("result = 2 + 2")
+    assert r.success
+    assert "4" in r.output or "4" in r.error
+
+
+def test_sandbox_executor_failure():
+    from bridge.healer import SandboxExecutor
+    exe = SandboxExecutor()
+    r = exe.run("raise ValueError('boom')")
+    assert not r.success
+    assert "boom" in r.error or "ValueError" in r.traceback_text
+
+
+def test_sandbox_executor_traceback():
+    from bridge.healer import SandboxExecutor
+    exe = SandboxExecutor()
+    r = exe.run("undefined_var + 1")
+    assert not r.success
+    assert "NameError" in r.traceback_text
+
+
+def test_self_healing_strip_fences():
+    from bridge.healer import SelfHealingLoop
+    assert SelfHealingLoop._strip_code_fences("```python\nx = 1\n```") == "x = 1"
+    assert SelfHealingLoop._strip_code_fences("```\nx = 1\n```") == "x = 1"
+    assert SelfHealingLoop._strip_code_fences("x = 1") == "x = 1"
+
+
+def test_hw_monitor_load_snapshot():
+    from bridge.hw_monitor import HWMonitor
+    mon = HWMonitor(enable_cxx_kernel=False)
+    snap = mon.snapshot()
+    assert snap.cpu_percent >= 0.0
+    assert snap.memory_percent >= 0.0
+
+
+def test_hw_monitor_precision_levels():
+    from bridge.hw_monitor import HWMonitor, PrecisionLevel
+    mon = HWMonitor(enable_cxx_kernel=False)
+    snap = mon.snapshot()
+    assert isinstance(snap.suggested_precision, PrecisionLevel)
+
+
+def test_resonance_driver_fluid_precision():
+    from bridge.agent_resonance import ResonanceDriver
+    d = ResonanceDriver()
+    d.activate_sync()
+    r = d.execute_intent("TEST_VECTOR")
+    assert "SUCCESS" in r
+    assert "precision" in r

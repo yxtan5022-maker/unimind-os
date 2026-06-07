@@ -1,7 +1,7 @@
 """UniMind OS (UMOS) - AI Agent Resonance Driver.
 
 Detects real hardware topology (CPU cores, memory, processes)
-to simulate hardware-level awareness.
+and adapts AI precision in real time based on system load (fluid scaling).
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from bridge.hw_monitor import HWMonitor, PRECISION_NAMES, PrecisionLevel
 from umos_py._compat import safe_print as print
 
 
@@ -25,7 +26,6 @@ def _detect_cpu() -> dict:
             "memory_available_gb": round(psutil.virtual_memory().available / (1024**3), 1),
         }
     except ImportError:
-        import os
         cpus = os.cpu_count() or 0
         return {
             "cores_logical": cpus,
@@ -37,6 +37,8 @@ class ResonanceDriver:
     def __init__(self):
         self.resonance_sync = False
         self.hw = _detect_cpu()
+        self.monitor = HWMonitor()
+        self.current_precision = PrecisionLevel.FP16
         print("[search] Resonance: Scanning local physical nodes...")
 
     def activate_sync(self):
@@ -51,11 +53,22 @@ class ResonanceDriver:
         if not self.resonance_sync:
             return "ERROR: Resonance not established."
 
+        snap = self.monitor.snapshot()
+        self.current_precision = snap.suggested_precision
+
         print("[zap] UMOS: Captured intent vector — '{}'".format(intent_vector))
-        print("[brain] UMOS: Routing through non-linear binary stream to NPU array...")
-        return "SUCCESS: INTENT_MATERIALIZED (via {} cores)".format(
-            self.hw.get("cores_logical", "?")
+        print("[brain] UMOS: Fluid-adapting to {} precision ({}-bit) under {:.0f}% CPU load".format(
+            PRECISION_NAMES.get(self.current_precision, "?"),
+            self.current_precision,
+            snap.cpu_percent,
+        ))
+        return "SUCCESS: INTENT_MATERIALIZED (via {} cores, {} precision)".format(
+            self.hw.get("cores_logical", "?"),
+            PRECISION_NAMES.get(self.current_precision, "?"),
         )
+
+    def get_precision(self) -> PrecisionLevel:
+        return self.current_precision
 
 
 def main() -> int:
