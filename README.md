@@ -33,13 +33,13 @@ python experiments/test_math_verification.py
 
 | Target w | P(1) empirical | `<Z>` theory | `<Z>` empirical | \|dev\| |
 |---------:|---------------:|-------------:|----------------:|--------:|
-| 0.1000 | 0.106567 | 0.800000 | 0.786865 | 0.013135 |
-| 0.3000 | 0.299927 | 0.400000 | 0.400146 | 0.000146 |
-| 0.5000 | 0.494873 | 0.000000 | 0.010254 | 0.010254 |
-| 0.7000 | 0.701050 | -0.400000 | -0.402100 | 0.002100 |
-| 0.9000 | 0.897583 | -0.800000 | -0.795166 | 0.004834 |
+| 0.1000 | 0.095459 | 0.800000 | 0.809082 | 0.009082 |
+| 0.3000 | 0.296875 | 0.400000 | 0.406250 | 0.006250 |
+| 0.5000 | 0.505493 | 0.000000 | -0.010986 | 0.010986 |
+| 0.7000 | 0.704590 | -0.400000 | -0.409180 | 0.009180 |
+| 0.9000 | 0.901733 | -0.800000 | -0.803467 | 0.003467 |
 
-**Max absolute deviation `|<Z>_emp - <Z>_theory| = 0.0131 < 0.05` (PASS).** The empirical measurement probabilities converge to the theoretical weights within binomial sampling variance, confirming the classical preprocessing pipeline correctly initializes quantum state amplitudes.
+**Max absolute deviation `|<Z>_emp - <Z>_theory| = 0.0110 < 0.05` (PASS).** The experiment uses a fixed simulator seed (`seed_simulator=42`), so the numbers above are exactly reproducible across runs. The empirical measurement probabilities converge to the theoretical weights within binomial sampling variance, confirming the classical preprocessing pipeline correctly initializes quantum state amplitudes.
 
 ### Experiment B — Performance Micro-Benchmark
 
@@ -53,19 +53,19 @@ python experiments/benchmark_unibit.py
 
 | Sequence Length | Pure Python (ms) | System-Level (ms) | Speedup |
 |----------------:|-----------------:|------------------:|--------:|
-| 10,000 | 3.49 | 0.33 | 10.5x |
-| 100,000 | 42.09 | 5.01 | 8.4x |
-| 1,000,000 | 446.72 | 64.06 | 7.0x |
+| 10,000 | 4.76 | 0.45 | 10.5x |
+| 100,000 | 51.50 | 5.96 | 8.6x |
+| 1,000,000 | 543.85 | 77.47 | 7.0x |
 
 **Table 2 — Full Unibit fold (repo engine): Pure Python vs Rust FFI (`core/target/release/umos_core.dll`)**
 
 | Sequence Length | Pure Python (ms) | System-Level (ms) | Speedup |
 |----------------:|-----------------:|------------------:|--------:|
-| 10,000 | 16.71 | 4.31 | 3.9x |
-| 100,000 | 195.50 | 33.31 | 5.9x |
-| 1,000,000 | 1,979.63 | 407.47 | 4.9x |
+| 10,000 | 10.40 | 3.13 | 3.3x |
+| 100,000 | 114.62 | 38.62 | 3.0x |
+| 1,000,000 | 1,180.72 | 398.66 | 3.0x |
 
-> Note: Table 2 includes Python-side FFI marshaling (per-element normalization + ctypes buffer construction); the pure Rust kernel itself accounts for ~100 ms at 1M elements. Speedups represent a conservative end-to-end lower bound.
+> Note: Table 2 includes Python-side FFI marshaling (per-element normalization + ctypes buffer construction); the pure Rust kernel is faster still, so these speedups are a conservative end-to-end lower bound.
 
 ## Repository Structure
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UniMind OS (UMOS) - Quick-launch entry point."""
+"""UniMind - Quick-launch entry point."""
 
 import sys
 from pathlib import Path

@@ -1,12 +1,18 @@
-"""Self-Healing Mechanism for UMOS.
+"""Self-Healing Mechanism for UniMind.
 
 Captures run-time errors from LLM-generated code and feeds the
 traceback back to the AI for automatic correction in a closed
 monitor-feedback loop.
+
+Generated code is executed within a *restricted namespace* (paper, Sec. 4.4):
+a static analysis rejects obvious dangerous patterns and only a safe subset
+of builtins is exposed. Full OS-level sandboxing is intentionally not
+implemented (paper, Sec. 6, T4).
 """
 
 from __future__ import annotations
 
+import builtins
 import io
 import sys
 import traceback
@@ -18,6 +24,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from bridge.llm import LLMConfig, chat
 from umos_py._compat import safe_print as print
+
+
+_SAFE_BUILTIN_NAMES = (
+    "abs", "all", "any", "bin", "bool", "bytearray", "bytes", "chr", "complex",
+    "dict", "divmod", "enumerate", "filter", "float", "format", "frozenset",
+    "hash", "hex", "int", "isinstance", "issubclass", "len", "list", "map",
+    "max", "min", "oct", "ord", "pow", "print", "range", "repr", "reversed",
+    "round", "set", "slice", "sorted", "str", "sum", "tuple", "zip",
+    "Exception", "ValueError", "TypeError", "NameError", "ImportError",
+    "ArithmeticError", "OverflowError", "ZeroDivisionError",
+)
+_SAFE_BUILTINS = {
+    name: getattr(builtins, name)
+    for name in _SAFE_BUILTIN_NAMES
+    if hasattr(builtins, name)
+}
+
+_BLOCKED_PATTERNS = (
+    "open(", "eval(", "exec(", "compile(", "getattr(", "setattr(",
+    "__import__", "os.", "subprocess", "shutil", "pickle",
+)
+
+
+def static_analysis(code: str) -> str | None:
+    """Return the first blocked pattern found, or None if the code is clean."""
+    for pat in _BLOCKED_PATTERNS:
+        if pat in code:
+            return pat
+    return None
 
 
 @dataclass
@@ -34,6 +69,16 @@ class SandboxExecutor:
         self.timeout = timeout_seconds
 
     def run(self, code: str) -> ExecutionReport:
+        risk = static_analysis(code)
+        if risk is not None:
+            return ExecutionReport(
+                code=code,
+                success=False,
+                output="",
+                error="static analysis rejected: '{}'".format(risk),
+                traceback_text="",
+            )
+
         stdout_buf = io.StringIO()
         stderr_buf = io.StringIO()
         old_stdout = sys.stdout
@@ -43,7 +88,7 @@ class SandboxExecutor:
 
         try:
             local_ns: dict[str, Any] = {}
-            exec(code, {"__builtins__": __builtins__}, local_ns)
+            exec(code, {"__builtins__": _SAFE_BUILTINS}, local_ns)
             result = local_ns.get("result", local_ns.get("output", "EXECUTED_OK"))
             return ExecutionReport(
                 code=code,
@@ -77,7 +122,7 @@ class SelfHealingLoop:
         max_r = max_retries if max_retries is not None else self.max_retries
 
         system = (
-            "You are the UMOS self-healing orchestrator (user space). Generate *only* valid Python code "
+            "You are the UniMind self-healing orchestrator (user space). Generate *only* valid Python code "
             "for the given task. The code will be executed via exec(). "
             "Assign the final result to a variable named 'result' or 'output'. "
             "Do NOT use markdown, explanations, or imports unless required by the task. "

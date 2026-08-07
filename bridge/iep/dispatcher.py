@@ -15,7 +15,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from bridge.distributed.node import DistributedNode
-from bridge.healer import SandboxExecutor
+from bridge.healer import SandboxExecutor, _SAFE_BUILTINS, static_analysis
 from bridge.hw_monitor import HWMonitor, PRECISION_NAMES
 from bridge.iep.schema import (
     IntentAction, IntentMessage, IntentResponse, ResourceCapability,
@@ -157,19 +157,15 @@ class IntentDispatcher:
     def _handle_expand(self, intent: IntentMessage, t0: float) -> IntentResponse:
         folded = intent.payload.get("folded", [])
         factor = intent.payload.get("factor", 2)
-        try:
-            expanded = self.unibit.virtual_expand_signal(folded, factor)
-            elapsed = (time.time() - t0) * 1000
-            return IntentResponse(
-                success=True, message="Signal expanded {}x".format(factor),
-                result=[round(v, 4) for v in expanded],
-                execution_time_ms=elapsed,
-            )
-        except Exception as e:
-            elapsed = (time.time() - t0) * 1000
-            return IntentResponse(
-                success=False, message=str(e), execution_time_ms=elapsed,
-            )
+        elapsed = (time.time() - t0) * 1000
+        # Signal upsampling is not part of the paper's Unibit pipeline
+        # (Eqs. 2-4); the action is acknowledged but not executed.
+        return IntentResponse(
+            success=False,
+            message="EXPAND not supported: not part of the paper's Unibit definition",
+            result={"folded_len": len(folded), "factor": factor},
+            execution_time_ms=elapsed,
+        )
 
     def _handle_compute(self, intent: IntentMessage, t0: float) -> IntentResponse:
         task = intent.payload.get("task", "result = 42")
@@ -191,8 +187,11 @@ class IntentDispatcher:
 
         # local execution with self-healing
         try:
+            risk = static_analysis(task)
+            if risk is not None:
+                raise RuntimeError("static analysis rejected: '{}'".format(risk))
             ns: dict = {}
-            exec(task, {"__builtins__": __builtins__}, ns)
+            exec(task, {"__builtins__": _SAFE_BUILTINS}, ns)
             result = ns.get("result", ns.get("output", "OK"))
             elapsed = (time.time() - t0) * 1000
             return IntentResponse(
@@ -263,7 +262,10 @@ class IntentDispatcher:
             if code:
                 ns: dict = {}
                 try:
-                    exec(code, {"__builtins__": __builtins__}, ns)
+                    risk = static_analysis(code)
+                    if risk is not None:
+                        raise RuntimeError("static analysis rejected: '{}'".format(risk))
+                    exec(code, {"__builtins__": _SAFE_BUILTINS}, ns)
                     result = ns.get("result", "CUSTOM_EXECUTED")
                     elapsed = (time.time() - t0) * 1000
                     return IntentResponse(

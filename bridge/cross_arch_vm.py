@@ -1,8 +1,8 @@
-"""UniMind OS (UMOS) - Universal AI-VM.
+"""UniMind - host platform detection helper.
 
-Detects the real host platform and shows how UMOS would bridge
-cross-architecture execution. With an LLM configured, it can
-generate translation stubs.
+Detects the real host platform. With an LLM configured it can generate
+translation stubs for cross-architecture execution (not part of the paper's
+core pipeline).
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ class UniversalVM:
 
     def bridge_app(self, app_name: str, source_os: str) -> str:
         print("[tools] UMOS-VM: Source OS={}  App={}".format(source_os, app_name))
-        print("[brain] UMOS-VM: Host arch={}".format(self.host["arch"]))
+        print("[info] UMOS-VM: Host arch={}".format(self.host["arch"]))
 
         jit_sig = hashlib.sha256("{}:{}".format(app_name, source_os).encode()).hexdigest()[:8]
 

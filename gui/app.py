@@ -1,4 +1,4 @@
-"""UMOS Desktop - tkinter-based GUI for UniMind OS."""
+"""UniMind - tkinter-based desktop GUI."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ class SignalCanvas(tk.Canvas):
 class UMOSApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("UniMind OS (UMOS) Desktop")
+        self.title("UniMind Desktop")
         self.geometry("900x680")
         self.minsize(800, 600)
 
@@ -100,8 +100,8 @@ class UMOSApp(tk.Tk):
         f = ttk.Frame(nb)
         nb.add(f, text="Home")
 
-        ttk.Label(f, text="UniMind OS (UMOS)", font=("Segoe UI", 20, "bold")).pack(pady=20)
-        ttk.Label(f, text="The Post-Silicon Intelligence Layer", font=("Segoe UI", 11)).pack()
+        ttk.Label(f, text="UniMind", font=("Segoe UI", 20, "bold")).pack(pady=20)
+        ttk.Label(f, text="User-space quantum-classical middleware prototype", font=("Segoe UI", 11)).pack()
 
         info = tk.Text(f, height=6, wrap="word", font=("Consolas", 10), bg="#f5f5f5")
         info.insert("1.0", (
@@ -250,7 +250,6 @@ class UMOSApp(tk.Tk):
 
         folded = self.unibit.fold_bits(bits)
         collapsed = self.unibit.collapse_signal(folded)
-        expanded = self.unibit.virtual_expand_signal(folded, 2)
 
         self.canvas_folded.draw_signal(folded, "blue", "Folded signal")
         self.canvas_collapsed.draw_signal([float(v) for v in collapsed], "green", "Collapsed (threshold)")
@@ -258,11 +257,9 @@ class UMOSApp(tk.Tk):
         self._log(self.demo_output, f"Input:     {bits}")
         self._log(self.demo_output, f"Folded:    {[round(x, 4) for x in folded]}")
         self._log(self.demo_output, f"Collapsed: {collapsed}")
-        self._log(self.demo_output, f"Roundtrip: {collapsed == bits}")
-        self._log(self.demo_output, f"Expanded (2x): {len(expanded)} values")
 
         self.home_output.delete("1.0", "end")
-        self._log(self.home_output, f"Core demo: {len(bits)} bits, roundtrip={collapsed == bits}")
+        self._log(self.home_output, f"Core demo: {len(bits)} bits folded via sliding-window + sinc")
 
     def _random_bits(self):
         import random
@@ -369,10 +366,9 @@ class UMOSApp(tk.Tk):
 
     def _show_about(self):
         messagebox.showinfo(
-            "About UniMind OS (UMOS)",
-            "UniMind OS (UMOS) v0.2.0\n\n"
-            "The World's First AI Native Operating System.\n"
-            "Breaking the wall between hardware and consciousness.\n\n"
+            "About UniMind",
+            "UniMind v0.3.0\n\n"
+            "A user-space middleware framework for hybrid quantum-classical computing.\n"
             "https://github.com/yxtan5022-maker/unimind-os"
         )
 

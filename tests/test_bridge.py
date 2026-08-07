@@ -28,7 +28,7 @@ def test_resonance_driver_no_crash():
 def test_umos_link_no_crash():
     from bridge.umos_link import UMOSLink
     link = UMOSLink("test-agent")
-    r = link.bypass_kernel_wall("test task")
+    r = link.execute_task("test task")
     # Without LLM configured, should fall back to the deterministic rule-based
     # dispatcher (AI-as-Orchestrator) rather than a simulated response
     assert r.startswith("RULE_BASED_FALLBACK") or r.startswith("LLM_")

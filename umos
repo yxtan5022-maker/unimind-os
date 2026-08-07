@@ -26,7 +26,7 @@ if command -v umos-desktop &>/dev/null; then
         --build|build)           exec python3 "$UMOS_ROOT/build_exe.py" "${@:2}";;
         --test|test|--tests)     exec python3 -m pytest "$UMOS_ROOT/tests/" -v "${@:2}";;
         --help|-h)
-            echo "UMOS — Unified Mind Operating System"
+            echo "UMOS — UniMind, a user-space quantum-classical middleware prototype"
             echo "Usage: $0 [command] [args...]"
             echo ""
             echo "Commands:"
@@ -63,7 +63,7 @@ case "${1:-}" in
     --build|build)            shift 1; run_build "$@";;
     --test|test|--tests)      shift 1; run_tests "$@";;
     --help|-h)
-        echo "UMOS — Unified Mind Operating System"
+        echo "UMOS — UniMind, a user-space quantum-classical middleware prototype"
         echo "Usage: $0 [command] [args...]"
         echo ""
         echo "Commands:"

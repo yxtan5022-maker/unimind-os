@@ -1,22 +1,22 @@
-# UMOS (Unified Mind Operating System)
+# UMOS Node (UniMind Middleware)
 
-Connect to a running UMOS node and access its AI-native kernel capabilities — folding, collapse, expand, compute, quantum sampling, self-healing, cluster offloading, and logical context migration.
+Connect to a running UniMind node and access its user-space capabilities — fold, collapse, compute, quantum sampling, self-healing, cluster status, and context migration.
 
 ## Overview
 
-UMOS is an AI-native OS kernel that exposes computational primitives through the **Intent Execution Protocol (IEP)**. This skill allows Hermes Agent to discover and call UMOS operations on any reachable node on the LAN.
+UniMind is a user-space quantum-classical middleware research prototype (not an operating system). It exposes computational primitives through the **Intent Execution Protocol (IEP)**. This skill allows Hermes Agent to discover and call UniMind operations on any reachable node on the LAN.
 
 ### Prerequisites
 
-- A running UMOS node on the LAN (`python -m bridge.hermes.mcp_server`)
-- Or a UMOS Desktop EXE instance with MCP enabled
+- A running UniMind node on the LAN (`python -m bridge.hermes.mcp_server`)
+- Or a UniMind Desktop EXE instance with MCP enabled
 - Network multicast enabled (for cluster discovery)
 
 ## Usage
 
 ### `/umos status`
 
-Get the current UMOS node's status — CPU, RAM, precision level, and capabilities.
+Get the current node's status — CPU, RAM, precision level, and capabilities.
 
 ```
 /umos status
@@ -24,7 +24,7 @@ Get the current UMOS node's status — CPU, RAM, precision level, and capabiliti
 
 ### `/umos fold [bits]`
 
-Fold classical bits into quantum-like probability amplitudes using sine interpolation.
+Fold classical bits into a smoothed signal via sliding-window frequency and sinc envelope (paper Eqs. 2-3).
 
 ```
 /umos fold 1 0 1 1 0 1
@@ -32,23 +32,15 @@ Fold classical bits into quantum-like probability amplitudes using sine interpol
 
 ### `/umos collapse [values]`
 
-Collapse folded amplitudes back to classical bits via threshold.
+Threshold folded signal values back to discrete bits (paper Eq. 4).
 
 ```
 /umos collapse 0.7071 0.0000 0.7071 0.0000
 ```
 
-### `/umos expand [values] [factor]`
-
-Expand a signal by virtual interpolation factor.
-
-```
-/umos expand 0.7071 0.0000 0.7071 0.0000 2
-```
-
 ### `/umos compute [python code]`
 
-Execute Python code on UMOS. The result is captured and returned. Self-healing is automatic on failure.
+Execute Python code on the node. The result is captured and returned. Self-healing is automatic on failure.
 
 ```
 /umos compute "result = sum(i * i for i in range(100))"
@@ -64,7 +56,7 @@ Run a quantum circuit sample using the specified backend (`qiskit` or `cudaq`).
 
 ### `/umos heal [code]`
 
-Send broken code to UMOS for LLM-assisted auto-repair.
+Send broken code to the node for LLM-assisted auto-repair.
 
 ```
 /umos heal "result = 1/0"
@@ -72,7 +64,7 @@ Send broken code to UMOS for LLM-assisted auto-repair.
 
 ### `/umos topology`
 
-List all alive UMOS cluster peers and their logical weights.
+List all alive cluster peers and their logical weights.
 
 ### `/umos migrate [key=value ...]`
 
@@ -84,12 +76,14 @@ Migrate a logical context to another cluster node.
 
 ## MCP Integration
 
-If you've connected UMOS as an MCP server, you can use the tools directly without slash commands:
+If you've connected UniMind as an MCP server, you can use the tools directly without slash commands:
 
 ```
 Use the `umos_fold` tool to fold bits [1,0,1,1] into amplitudes.
-Then use `umos_expand` with factor 3 on the result.
+Then use `umos_collapse` on the result.
 ```
+
+Note: `umos_expand` is not a supported operation; it is not part of the Unibit definition and is not exposed.
 
 ## Configuration
 
@@ -101,7 +95,7 @@ To start the MCP server manually:
 python -m bridge.hermes.mcp_server
 ```
 
-Or via the UMOS Desktop EXE with the `--mcp` flag.
+Or via the UniMind Desktop EXE with the `--mcp` flag.
 
 ## Example Session
 

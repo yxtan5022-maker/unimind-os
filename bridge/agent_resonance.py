@@ -1,7 +1,7 @@
-"""UniMind OS (UMOS) - AI Agent Resonance Driver.
+"""UniMind - hardware load monitor wrapper.
 
-Detects real hardware topology (CPU cores, memory, processes)
-and adapts AI precision in real time based on system load (fluid scaling).
+Detects real hardware topology (CPU cores, memory) and reports a suggested
+AI precision level based on measured system load.
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ class ResonanceDriver:
         self.current_precision = snap.suggested_precision
 
         print("[zap] UMOS: Captured intent vector — '{}'".format(intent_vector))
-        print("[brain] UMOS: Fluid-adapting to {} precision ({}-bit) under {:.0f}% CPU load".format(
+        print("[info] UMOS: Adapting to {} precision ({}-bit) under {:.0f}% CPU load".format(
             PRECISION_NAMES.get(self.current_precision, "?"),
             self.current_precision,
             snap.cpu_percent,

@@ -34,8 +34,7 @@ BACKEND_NAMES = {b.value: b for b in QuantumBackend}
 class QUnibitConfig:
     phase_shift: float = 0.42
     collapse_threshold: float = 0.707
-    entropy_window: int = 5
-    weight_floor: float = 0.85
+    window_delta: int = 2
     backend: str = "classical"
     cudaq_target: str = ""
     qiskit_shots: int = 1024
@@ -103,8 +102,7 @@ class QUnibit:
             UnibitConfig(
                 phase_shift=self.cfg.phase_shift,
                 collapse_threshold=self.cfg.collapse_threshold,
-                entropy_window=self.cfg.entropy_window,
-                weight_floor=self.cfg.weight_floor,
+                window_delta=self.cfg.window_delta,
             )
         )
 
@@ -138,8 +136,10 @@ class QUnibit:
         qc = qk.QuantumCircuit(qr, cr)
 
         for i, b in enumerate(bits):
-            w = self._classical._dynamic_weight(bits, i)
-            # Angle-encoding mapping (paper, Sec. 4.3). The Ry gate acts as
+            # Angle-encoding mapping (paper, Sec. 4.3, Algorithm 1). The Unibit
+            # weight is the sliding-window frequency (paper Eq. 2):
+            #   w_i = (1 / |W_i|) * sum_{j in W_i} b_j,  W_i = [i-Delta, i+Delta]
+            # The Ry gate acts as
             #   Ry(theta)|0> = cos(theta/2)|0> + sin(theta/2)|1>,
             # so the |1>-state probability is sin^2(theta/2). Choosing
             #   theta_i = 2 * arcsin(sqrt(w_i))
@@ -147,6 +147,7 @@ class QUnibit:
             # matches the Unibit sliding-window weight exactly. arcsin (not
             # arccos) is used so w=0 -> theta=0 (no rotation) and w=1 -> theta=pi
             # (full rotation), an intuitive monotonic correspondence.
+            w = Unibit.sliding_window_weight(bits, i, self.cfg.window_delta)
             theta = 2.0 * math.asin(math.sqrt(w))
             if b == 1:
                 qc.x(qr[i])

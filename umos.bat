@@ -60,7 +60,7 @@ python -m pytest "%UMOS_ROOT%tests\" -v %2 %3 %4 %5 %6 %7 %8 %9
 goto :eof
 
 :help
-echo UMOS -- Unified Mind Operating System
+echo UMOS -- UniMind, a user-space quantum-classical middleware prototype
 echo Usage: umos [command] [args...]
 echo.
 echo Commands:

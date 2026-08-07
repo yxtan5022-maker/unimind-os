@@ -1,9 +1,8 @@
-"""Fluid Hardware Monitor — real-time load sensing & adaptive precision.
+"""Hardware Monitor - real-time load sensing.
 
 Reads CPU frequency, utilisation, RAM pressure, and (on supported
-platforms) thermal throttling state, then suggests an AI model
-quantisation level so the system can dial precision up/down based
-on available headroom.
+platforms) swap usage, then reports a suggested AI precision level
+based on measured load headroom.
 """
 
 from __future__ import annotations

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "umos"
 version = "0.2.0"
-description = "UniMind OS (UMOS) - The World's First AI Native Operating System"
+description = "UniMind - a user-space quantum-classical middleware research prototype"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"

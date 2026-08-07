@@ -25,7 +25,6 @@ def _try_run_topo_mapper() -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="umos-demo")
     parser.add_argument("--bits", default="1011010011")
-    parser.add_argument("--expand", type=int, default=2)
     parser.add_argument("--run-topo-mapper", action="store_true")
     args = parser.parse_args(argv)
 
@@ -34,14 +33,11 @@ def main(argv: list[str] | None = None) -> int:
 
     folded = u.fold_bits(bits)
     collapsed = u.collapse_signal(folded)
-    expanded = u.virtual_expand_signal(folded, args.expand)
 
-    print("--- UMOS Phase1 Demo ---")
+    print("--- UniMind Unibit Demo ---")
     print("bits:", bits)
     print("folded:", [round(x, 4) for x in folded])
     print("collapsed:", collapsed)
-    print("expanded_len:", len(expanded))
-    print("roundtrip_ok:", collapsed == bits)
 
     if args.run_topo_mapper:
         _try_run_topo_mapper()

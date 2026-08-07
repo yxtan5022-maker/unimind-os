@@ -1,14 +1,14 @@
-"""UniMind (UMOS) - AI-as-Orchestrator: User-Space Intent-to-Execution Bridge.
+"""UniMind - AI-as-Orchestrator: User-Space Intent-to-Execution Bridge.
 
 The LLM is explicitly placed in *user space* as an AI-as-Orchestrator layer,
 NOT inside the OS kernel. When an LLM API key is configured (via
 UMOS_LLM_API_KEY), the bridge uses a real LLM to translate natural-language
-intent into runnable Python code. Without a key — or after 3 failed LLM
-inference attempts — execution falls back to a deterministic rule-based
+intent into runnable Python code. Without a key - or after 3 failed LLM
+inference attempts - execution falls back to a deterministic rule-based
 dispatcher mapping intents to predefined circuit templates.
 
-Integrates the self-healing loop and fluid hardware adaptation
-for an AI-native execution pipeline.
+Integrates the self-healing loop (monitor-feedback) into the execution
+pipeline (paper, Sec. 3.1).
 """
 
 from __future__ import annotations
@@ -85,9 +85,12 @@ class UMOSLink:
                 )
         return "result = 'No matching rule-based template for: {}'".format(low)
 
-    def bypass_kernel_wall(self, task_description: str) -> str:
-        print("[rocket] UMOS: Intercepting task — '{}'".format(task_description))
-        print("[brain] UMOS: Generating code from intent...")
+    def execute_task(self, task_description: str) -> str:
+        """Orchestration pipeline (paper, Sec. 3.1): intent -> LLM code generation
+        (up to 3 attempts) -> sandboxed execution -> deterministic rule-based
+        fallback if the LLM is unavailable."""
+        print("[orchestrator] UMOS: Intercepting task - '{}'".format(task_description))
+        print("[orchestrator] UMOS: Generating code from intent...")
 
         code = None
         used_fallback = False
@@ -123,45 +126,31 @@ class UMOSLink:
             print("[warning] Rule-based fallback template failed to execute.")
             return "FALLBACK_FAILED: {} — {}".format(report.error[:100], report.traceback_text[:300])
 
-        print("[warning] Code failed — activating self-healing loop...")
+        print("[warning] Code failed - activating self-healing loop...")
         healed = self.healer.heal(task_description)
         if healed.success:
             return "HEALED: {}".format(healed.output[:300])
         return "HEAL_FAILED: {} — {}".format(healed.error[:100], healed.traceback_text[:300])
 
-    def bypass_with_healing(self, task_description: str) -> str:
-        print("[rocket] UMOS: Intercepting task — '{}'".format(task_description))
+    def heal_task(self, task_description: str) -> str:
+        """Self-healing loop (paper, Sec. 3.1): feeds execution tracebacks back
+        to the orchestrator for correction."""
+        print("[orchestrator] UMOS: Self-healing loop on - '{}'".format(task_description))
         hw = self.monitor.snapshot()
-        print("[monitor] Load: CPU {:.0f}% RAM {:.0f}% — adapting to {}".format(
+        print("[monitor] Load: CPU {:.0f}% RAM {:.0f}%".format(
             hw.cpu_percent, hw.memory_percent,
-            PRECISION_NAMES.get(hw.suggested_precision, "?"),
         ))
         report = self.healer.heal(task_description)
         if report.success:
             return "HEALED: {}".format(report.output[:300])
         return "HEAL_FAILED: {}".format(report.error[:200])
 
-    def allocate_void_ram(self, required_gb: int) -> None:
-        print("[battery] UMOS: Remapping hardware for {} GB logical demand...".format(required_gb))
-        base = 32
-        factor = max(1, round(required_gb / base))
-        bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
-        folded = self.unibit.fold_bits(bits)
-        expanded = self.unibit.virtual_expand_signal(folded, factor)
-        collapsed = self.unibit.collapse_signal(folded)
-        print("[chart] UMOS: void-map base={} target={} factor={}x expanded_len={} roundtrip={}".format(
-            base, required_gb, factor, len(expanded), collapsed == bits
-        ))
-        print("[OK] UMOS: Physical memory folded. AI driver injected into hardware.")
-
 
 def main() -> int:
     link = UMOSLink("UMOS-Commander")
 
-    result = link.bypass_kernel_wall("Print the first 10 prime numbers")
+    result = link.execute_task("Print the first 10 prime numbers")
     print("[target] Result: {}".format(result))
-
-    link.allocate_void_ram(64)
 
     return 0
 

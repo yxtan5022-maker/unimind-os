@@ -12,8 +12,7 @@ from typing import Iterable, List, Optional, Sequence
 class UnibitConfig:
     phase_shift: float = 0.42
     collapse_threshold: float = 0.707
-    entropy_window: int = 5
-    weight_floor: float = 0.85
+    window_delta: int = 2
 
 
 class Unibit:
@@ -33,58 +32,29 @@ class Unibit:
             return [1 if abs(float(s)) > thr else 0 for s in folded]
         return self._rust_collapse_signal([float(x) for x in folded], thr)
 
-    def virtual_expand_signal(self, folded: Sequence[float], factor: int) -> List[float]:
-        factor = max(1, int(factor))
-        n = len(folded)
-        if n < 2:
-            return [float(v) for v in folded]
-
-        out_len = n * factor
-        out: List[float] = [0.0] * out_len
-        for k in range(out_len):
-            t = k / factor
-            s = 0.0
-            wsum = 0.0
-            for i in range(n):
-                x = t - i
-                if abs(x) < 1e-12:
-                    s += folded[i]
-                    wsum += 1.0
-                elif abs(x) < 6.0:
-                    sinc = math.sin(math.pi * x) / (math.pi * x)
-                    window = 0.5 * (1.0 + math.cos(math.pi * x / 6.0))
-                    weight = sinc * window
-                    s += folded[i] * weight
-                    wsum += weight
-            out[k] = s / wsum if wsum > 0 else 0.0
-        return out
+    @staticmethod
+    def sliding_window_weight(bits: Sequence[int], idx: int, delta: int) -> float:
+        """Paper Eq. 2: w_i = (1 / |W_i|) * sum_{j in W_i} b_j, W_i = [i-delta, i+delta]."""
+        start = max(0, idx - delta)
+        end = min(len(bits), idx + delta + 1)
+        window = bits[start:end]
+        return float(sum(window)) / float(len(window)) if window else 0.0
 
     def _py_fold_bits(self, bits: Sequence[int]) -> List[float]:
-        out: List[float] = []
-        for i, b in enumerate(bits):
-            w = self._dynamic_weight(bits, i)
-            out.append(math.sin(b * (math.pi / 2.0) + self.cfg.phase_shift) * w)
-        return out
+        """Paper Eqs. 2-3: sliding-window frequency + sinc folding.
 
-    def _dynamic_weight(self, bits: Sequence[int], idx: int) -> float:
-        window = max(1, int(self.cfg.entropy_window))
-        start = max(0, idx - window // 2)
-        end = min(len(bits), idx + window // 2 + 1)
-        segment = bits[start:end]
-        if not segment:
-            return 1.0
-        ones = sum(1 for x in segment if x != 0)
-        total = len(segment)
-        p1 = ones / total
-        p0 = 1.0 - p1
-        h = 0.0
-        if p0 > 0:
-            h -= p0 * math.log2(p0)
-        if p1 > 0:
-            h -= p1 * math.log2(p1)
-        ent = max(0.0, min(1.0, h))
-        w = self.cfg.weight_floor + (1.0 - self.cfg.weight_floor) * (1.0 - ent)
-        return max(self.cfg.weight_floor, min(1.0, w))
+        s_i = w_i * sinc((i + phi) * pi / n),  sinc(x) = sin(x)/x.
+        """
+        n = len(bits)
+        if n == 0:
+            return []
+        out: List[float] = []
+        for i, _b in enumerate(bits):
+            w = self.sliding_window_weight(bits, i, self.cfg.window_delta)
+            x = (i + self.cfg.phase_shift) * math.pi / n
+            s = math.sin(x) / x if abs(x) > 1e-12 else 1.0
+            out.append(w * s)
+        return out
 
     def _try_load_rust_lib(self, rust_lib_path: str | os.PathLike | None) -> Optional[ctypes.CDLL]:
         candidates: List[Path] = []

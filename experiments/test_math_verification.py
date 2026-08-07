@@ -30,6 +30,7 @@ from qiskit_aer import AerSimulator
 
 TARGET_WEIGHTS = [0.1, 0.3, 0.5, 0.7, 0.9]
 SHOTS = 8192
+SEED = 42  # fixed AerSimulator seed -> reproducible results
 MAX_DEV = 0.05  # asserted tolerance: |<Z>_emp - <Z>_theory| < 0.05
 
 
@@ -48,13 +49,13 @@ def build_circuit(theta: float) -> QuantumCircuit:
     return qc
 
 
-def run_experiment(shots: int = SHOTS) -> list[dict[str, float]]:
+def run_experiment(shots: int = SHOTS, seed: int = SEED) -> list[dict[str, float]]:
     simulator = AerSimulator()
     rows: list[dict[str, float]] = []
     for w in TARGET_WEIGHTS:
         theta = rotation_angle(w)
         circuit = build_circuit(theta)
-        result = simulator.run(circuit, shots=shots).result()
+        result = simulator.run(circuit, shots=shots, seed_simulator=seed).result()
         counts = result.get_counts(circuit)
         p1 = counts.get("1", 0) / shots
         rows.append(

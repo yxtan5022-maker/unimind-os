@@ -88,7 +88,7 @@ if [ "$OS" = "Linux" ]; then
     cat > "$DESKTOP_DIR/umos.desktop" << 'DESKTOP_EOF'
 [Desktop Entry]
 Name=UMOS Desktop
-Comment=UniMind OS - AI Native Operating System
+Comment=UniMind - user-space quantum-classical middleware prototype
 Exec=umos --desktop
 Icon=utilities-terminal
 Terminal=false
