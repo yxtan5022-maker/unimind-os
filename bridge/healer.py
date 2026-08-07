@@ -77,7 +77,7 @@ class SelfHealingLoop:
         max_r = max_retries if max_retries is not None else self.max_retries
 
         system = (
-            "You are the UMOS self-healing kernel. Generate *only* valid Python code "
+            "You are the UMOS self-healing orchestrator (user space). Generate *only* valid Python code "
             "for the given task. The code will be executed via exec(). "
             "Assign the final result to a variable named 'result' or 'output'. "
             "Do NOT use markdown, explanations, or imports unless required by the task. "

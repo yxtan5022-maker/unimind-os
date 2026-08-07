@@ -280,7 +280,7 @@ class UMOSApp(tk.Tk):
             model=self.model_var.get(),
         )
         system = (
-            "You are the UMOS kernel. Generate *only* valid Python code "
+            "You are the UMOS AI-as-Orchestrator layer (user space). Generate *only* valid Python code "
             "that accomplishes the task. No explanations."
         )
         result = chat(task, system=system, cfg=cfg)

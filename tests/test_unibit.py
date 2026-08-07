@@ -48,7 +48,7 @@ def test_dynamic_weight_uniform():
     u = Unibit()
     bits = [1, 1, 1, 1]
     w0 = u._dynamic_weight(bits, 0)
-    assert w0 == 1.0  # zero entropy -> max weight
+    assert w0 == 1.0  # all-ones window -> max weight
 
 
 def test_dynamic_weight_mixed():

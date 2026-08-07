@@ -139,6 +139,14 @@ class QUnibit:
 
         for i, b in enumerate(bits):
             w = self._classical._dynamic_weight(bits, i)
+            # Angle-encoding mapping (paper, Sec. 4.3). The Ry gate acts as
+            #   Ry(theta)|0> = cos(theta/2)|0> + sin(theta/2)|1>,
+            # so the |1>-state probability is sin^2(theta/2). Choosing
+            #   theta_i = 2 * arcsin(sqrt(w_i))
+            # yields sin^2(theta_i/2) = w_i, i.e. the measured |1> probability
+            # matches the Unibit sliding-window weight exactly. arcsin (not
+            # arccos) is used so w=0 -> theta=0 (no rotation) and w=1 -> theta=pi
+            # (full rotation), an intuitive monotonic correspondence.
             theta = 2.0 * math.asin(math.sqrt(w))
             if b == 1:
                 qc.x(qr[i])

@@ -29,8 +29,9 @@ def test_umos_link_no_crash():
     from bridge.umos_link import UMOSLink
     link = UMOSLink("test-agent")
     r = link.bypass_kernel_wall("test task")
-    # Without LLM configured, should fall back to simulation
-    assert r.startswith("SIMULATED") or r.startswith("LLM_")
+    # Without LLM configured, should fall back to the deterministic rule-based
+    # dispatcher (AI-as-Orchestrator) rather than a simulated response
+    assert r.startswith("RULE_BASED_FALLBACK") or r.startswith("LLM_")
 
 
 def test_universal_vm_no_crash():

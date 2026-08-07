@@ -21,7 +21,7 @@ class UMOS_Demonstrator:
         print("--- [UMOS] Logic Morphing Engine (PoC v{}) ---".format(self.version))
 
     def simulate_logic_folding(self, bits):
-        print("[Phase 1] Entropy scanning {} bits...".format(len(bits)))
+        print("[Phase 1] Sliding-window scanning {} bits...".format(len(bits)))
         time.sleep(0.3)
         folded = self.unibit.fold_bits(bits)
         print("[OK] Logic fold complete. {} folded values.".format(len(folded)))
