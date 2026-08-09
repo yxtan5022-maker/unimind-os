@@ -19,6 +19,7 @@ from typing import Any, List, Sequence
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from umos_py._compat import safe_print as print
+from umos_py.unibit import Unibit
 
 
 class QuantumBackend(str, Enum):

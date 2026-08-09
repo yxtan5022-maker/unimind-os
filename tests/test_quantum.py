@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from collections import Counter
+
+import pytest
+
 from quantum.qunibit import QUnibit, QuantumBackend
 
 
@@ -41,3 +45,14 @@ def test_qunibit_backend_enum():
     assert QuantumBackend.CLASSICAL.value == "classical"
     assert QuantumBackend.QISKIT.value == "qiskit"
     assert QuantumBackend.CUDAQ.value == "cudaq"
+
+
+def test_qunibit_qiskit_fold_gate_counts():
+    pytest.importorskip("qiskit")
+    qu = QUnibit()
+    bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
+    qc = qu.fold_bits(bits, backend="qiskit")
+    assert qc is not None
+    counts = Counter(insn.operation.name for insn in qc.data)
+    assert counts["x"] == bits.count(1)
+    assert counts["ry"] == len(bits)
