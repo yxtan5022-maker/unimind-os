@@ -49,6 +49,7 @@ def test_qunibit_backend_enum():
 
 def test_qunibit_qiskit_fold_gate_counts():
     pytest.importorskip("qiskit")
+    pytest.importorskip("qiskit_aer")
     qu = QUnibit()
     bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
     qc = qu.fold_bits(bits, backend="qiskit")
