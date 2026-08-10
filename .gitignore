@@ -216,3 +216,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# LaTeX build artifacts
+*.aux
+*.out
+*.toc
+*.log
+*.fls
+*.fdb_latexmk
+
