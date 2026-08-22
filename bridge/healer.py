@@ -170,7 +170,7 @@ class SelfHealingLoop:
 
     def _generate(self, prompt: str, system: str = "") -> str | None:
         raw = chat(prompt, system=system, cfg=self.cfg)
-        if raw is None:
+        if raw is None or raw.startswith("<LLM error"):
             return None
         return self._strip_code_fences(raw)
 

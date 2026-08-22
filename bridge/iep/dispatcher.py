@@ -259,7 +259,7 @@ class IntentDispatcher:
                 "Assign result to 'result'."
             ).format(action_name, str(payload)[:500])
             code = chat(prompt, system="", cfg=llm)
-            if code:
+            if code and not code.startswith("<LLM error"):
                 ns: dict = {}
                 try:
                     risk = static_analysis(code)

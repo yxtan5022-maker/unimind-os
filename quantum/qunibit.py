@@ -165,12 +165,19 @@ class QUnibit:
             return None
         shots = kwargs.get("shots", self.cfg.qiskit_shots)
         try:
-            qc.measure_all()
+            # Measure into the circuit's own classical register when it can hold
+            # every qubit (e.g. circuits built by _fold_qiskit). measure_all()
+            # would append a second "meas" register and yield space-separated
+            # count keys ("0101 0110") that the int() parse below cannot handle.
+            if 0 < qc.num_clbits == qc.num_qubits:
+                qc.measure(qc.qubits, qc.clbits)
+            else:
+                qc.measure_all()
             simulator = qk.AerSimulator()
             result = simulator.run(qc, shots=shots).result()
             counts = result.get_counts(qc)
             most_common = max(counts, key=counts.get)
-            return [int(c) for c in most_common]
+            return [int(c) for c in most_common.replace(" ", "")]
         except Exception as e:
             print("[qunibit] Qiskit simulation failed: {}".format(e))
             return None

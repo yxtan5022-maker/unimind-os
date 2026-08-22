@@ -69,7 +69,7 @@ class UMOSApp(tk.Tk):
         self._build_menu()
         self._build_notebook()
 
-        self.protocol("WM_DELETE_CLOSE", self._on_close)
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _build_menu(self):
         bar = tk.Menu(self)
@@ -293,18 +293,18 @@ class UMOSApp(tk.Tk):
         try:
             from quantum.qunibit import QUnibit
             qu = QUnibit()
-            if not qu.available():
+            if "qiskit" not in qu.available_backends():
                 self._log(self.quantum_output, "Qiskit not installed.")
                 self._log(self.quantum_output, "Install with: pip install umos[quantum]")
                 return
             bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
-            qc = qu.fold_bits_circuit(bits)
+            qc = qu.fold_bits(bits, backend="qiskit")
             if qc:
                 self._log(self.quantum_output, f"Quantum circuit created")
                 self._log(self.quantum_output, f"Depth: {qc.depth()}")
                 self._log(self.quantum_output, f"Width: {qc.width()} qubits")
                 self._log(self.quantum_output, str(qc)[:2000])
-                result = qu.simulate(qc)
+                result = qu.simulate(backend="qiskit", circuit=qc)
                 self._log(self.quantum_output, f"Measurement: {result}")
                 self._log(self.quantum_output, f"Match: {result == bits}")
         except Exception as e:
@@ -358,7 +358,7 @@ class UMOSApp(tk.Tk):
         try:
             from quantum.qunibit import QUnibit
             qu = QUnibit()
-            self._log(self.home_output, f"Qiskit available: {qu.available()}")
+            self._log(self.home_output, f"Qiskit available: {'qiskit' in qu.available_backends()}")
         except ImportError:
             self._log(self.home_output, "Qiskit not installed")
 

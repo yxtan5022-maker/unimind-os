@@ -289,16 +289,24 @@ class UMOSMCPServer:
     def _handle_quantum_sample(self, req_id: Any, args: dict) -> str:
         backend = args.get("backend", "qiskit")
         shots = args.get("shots", 1024)
+        bits = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1]
         try:
-            from quantum.cudaq_backend import CUDAQBackend, is_available as cudaq_ok
+            from quantum.cudaq_backend import (
+                CUDAQBackend, is_available as cudaq_ok, make_fold_kernel,
+            )
             if backend == "cudaq" and cudaq_ok():
                 qb = CUDAQBackend()
-                result = qb.sample(shots)
+                kernel_data = make_fold_kernel(bits)
+                if kernel_data is None:
+                    return self._error(req_id, -32000, "CUDA-Q fold kernel unavailable")
+                result = qb.sample(kernel_data[0], *kernel_data[1:], shots=shots)
             else:
                 from quantum.qunibit import QUnibit
                 qu = QUnibit()
-                qu.set_backend("qiskit")
-                result = qu.sample(shots)
+                qc = qu.fold_bits(bits, backend="qiskit")
+                if qc is None:
+                    return self._error(req_id, -32000, "Qiskit backend not available")
+                result = qu.simulate(backend="qiskit", circuit=qc, shots=shots)
             return self._result(req_id, {
                 "content": [{"type": "text", "text": json.dumps(result, indent=2)}],
             })
